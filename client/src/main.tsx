@@ -5,7 +5,7 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import { QueryClient } from '@tanstack/react-query'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { AuthProvider } from './context/authContext.tsx'
+import { AuthProvider } from './context/AuthContext.tsx'
 
 const queryClient = new QueryClient()
 

@@ -1,7 +1,7 @@
 // src/pages/Login.tsx
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router'
-import { useAuth } from '../context/authContext'
+import { useAuth } from '../context/AuthContext'
 
 const Login = () => {
   const { login } = useAuth()
