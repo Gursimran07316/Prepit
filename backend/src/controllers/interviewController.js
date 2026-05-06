@@ -74,12 +74,16 @@ Return ONLY valid JSON. No markdown, no code blocks, no backticks. Raw JSON only
         res.write(`data: ${JSON.stringify({ text })}\n\n`)
       }
     }
+    const cleaned = fullResponse
+  .replace(/```json/g, '')
+  .replace(/```/g, '')
+  .trim()
 
     // save assistant response after stream completes
     await Conversation.create({
       sessionId,
       role: 'assistant',
-      content: fullResponse,
+      content: cleaned,
     })
 
     res.write(`data: [DONE]\n\n`)

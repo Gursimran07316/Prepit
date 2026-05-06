@@ -9,6 +9,7 @@ import MainLayout from './layout/MainLayout'
 import Home from './pages/Home'
 import DashboardLayout from './layout/DashboardLayout'
 import ProtectedRoute from './guards/ProtectedRoute'
+import Interview from './pages/Interview'
 
 function App() {
 
@@ -25,6 +26,7 @@ function App() {
   <Route element={<ProtectedRoute />}>
     <Route element={<DashboardLayout />}>
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/session/:sessionId" element={<Interview />} />
     </Route>
   </Route>
 </Routes>

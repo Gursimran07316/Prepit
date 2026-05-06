@@ -1,8 +1,14 @@
+import SessionsList from "../components/SessionsList"
 
 
 const Dashboard = () => {
   return (
-    <div>Dashboard</div>
+    <div>
+      <SessionsList/>
+      
+
+
+    </div>
   )
 }
 

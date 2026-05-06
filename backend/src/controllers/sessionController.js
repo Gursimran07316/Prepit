@@ -5,8 +5,13 @@ export const createSession = async (req, res) => {
     try {
         
         const {jobPostingText} = req.body;
+          if (!jobPostingText) {
+        return res.status(400).json({ message: 'Job posting text is required' })
+        }
         const result = await parseJobPosting(jobPostingText);
         console.log(result);
+      
+
         const session= await Session.create({
             userId: req.user._id,
             jobTitle: result.jobTitle,
@@ -14,11 +19,34 @@ export const createSession = async (req, res) => {
             requiredSkills: result.requiredSkills,
             preferredSkills: result.preferredSkills,
             jobPostingText: jobPostingText,
-            status: 'active'
         })
 
-        res.status(200).json({ message: 'Session created successfully' ,session})
+        res.status(201).json({ message: 'Session created successfully' ,session})
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message })
     }   
+}
+
+export const getSessions = async (req, res) => {
+    try {
+        const sessions = await Session.find({ userId: req.user._id }).sort({ createdAt: -1 })
+        res.status(200).json(sessions)
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message })
+    }
+}
+
+export const getSessionById = async (req, res) => {
+    try {
+        const session = await Session.findById(req.params.id)
+        if (!session) {
+            return res.status(404).json({ message: 'Session not found' })
+        }
+        if (session.userId.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: 'Unauthorized' })
+        }
+        res.status(200).json(session)
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message })
+    }
 }
