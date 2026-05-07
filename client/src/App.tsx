@@ -1,5 +1,6 @@
 
 import './App.css'
+import './index.css';
 import { Route, Routes } from 'react-router'
 
 import Register from './components/Register'

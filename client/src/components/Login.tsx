@@ -7,76 +7,89 @@ const Login = () => {
   const { login } = useAuth()
   const navigate = useNavigate()
 
-  // 👇 your job 1 — setup state for email, password, error, isLoading
+
   const [email,setEmail]=useState('');
   const [password,setPassword]=useState('');
   const [error,setError]=useState('');
   const [isLoading,setIsLoading]=useState(false);
-  
+
 
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    // 👇 your job 2 — set loading true, clear previous error
+
       setIsLoading(true);
       setError('');
 
 
     try {
-      // 👇 your job 3 — call login() with email and password
-      // on success navigate to /dashboard
+
       await login(email,password);
       navigate('/dashboard');
 
 
 
     } catch (err) {
-      // 👇 your job 4 — set error message 'Invalid email or password'
-      //                  set loading false
+
       setError('Invalid email or password');
       setIsLoading(false);
     }
   }
 
   return (
-    <div>
-      <h1>Login</h1>
+    <div className="flex items-center justify-center min-h-[calc(100vh-65px)] px-4">
+      <div className="w-full max-w-sm bg-gray-900 border border-gray-800 rounded-xl p-8">
+        <h1 className="text-2xl font-bold text-white mb-6 text-center">Welcome back</h1>
 
-      {/* 👇 your job 5 — show error message if error exists */}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && (
+          <p className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm rounded-md px-4 py-2 mb-4">
+            {error}
+          </p>
+        )}
 
-      <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="space-y-4">
 
-        {/* 👇 your job 6 — email input controlled */}
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />    
+          <div>
+            <label className="block text-sm text-gray-400 mb-1">Email</label>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-gray-800 border border-gray-700 text-white placeholder-gray-500 rounded-md px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
 
+          <div>
+            <label className="block text-sm text-gray-400 mb-1">Password</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-gray-800 border border-gray-700 text-white placeholder-gray-500 rounded-md px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
 
-        {/* 👇 your job 7 — password input controlled */}
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+    
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-md px-4 py-2.5 text-sm transition-colors"
+          >
+            {isLoading ? 'Logging in...' : 'Login'}
+          </button>
 
+        </form>
 
-        {/* 👇 your job 8 — submit button */} 
-        <button type="submit" disabled={isLoading}>
-          {isLoading ? 'Logging in...' : 'Login'}
-        </button>
-        {/* disabled when isLoading */}
-        {/* text shows 'Logging in...' when loading, 'Login' when not */}
-
-      </form>
-
-      {/* 👇 your job 9 — link to register page */}
-      <p>Don't have an account? <Link to="/register">Register</Link></p>
+        <p className="text-gray-500 text-sm text-center mt-6">
+          Don't have an account?{' '}
+          <Link to="/register" className="text-blue-400 hover:text-blue-300 transition-colors">
+            Register
+          </Link>
+        </p>
+      </div>
     </div>
   )
 }
