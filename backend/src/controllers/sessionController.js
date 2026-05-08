@@ -1,3 +1,4 @@
+import Conversation from "../models/Conversation.js";
 import Session from "../models/Session.js";
 import { parseJobPosting } from "../services/aiService.js";
 
@@ -50,3 +51,19 @@ export const getSessionById = async (req, res) => {
         res.status(500).json({ message: 'Server error', error: error.message })
     }
 }
+
+export const getConvesationsBySessionId = async (req, res) => {
+    try {
+        const session = await Session.findById(req.params.sessionId)
+        if (!session) {
+            return res.status(404).json({ message: 'Session not found' })
+        }
+        if (session.userId.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: 'Unauthorized' })
+        }
+        const conversations = await Conversation.find({ sessionId: req.params.sessionId }).sort({ createdAt: 1 })
+        res.status(200).json(conversations)
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message })
+    }
+}   

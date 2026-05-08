@@ -72,5 +72,5 @@ export const useInterview = (sessionId: string) => {
     }
   }
 
-  return { messages, input, setInput, sendMessage, isStreaming }
+  return { messages, input, setInput, sendMessage, isStreaming,setMessages }
 }

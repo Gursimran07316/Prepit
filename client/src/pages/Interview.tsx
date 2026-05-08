@@ -1,6 +1,6 @@
 // Interview.tsx
 import { Navigate, useParams } from 'react-router'
-import { useEffect, useRef } from 'react'
+import { use, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext'
 import { useInterview } from '../hooks/useInterview'
@@ -15,7 +15,16 @@ const Interview = () => {
 
   if (!sessionId) return <Navigate to="/dashboard" replace />
 
-  const { messages, input, setInput, sendMessage, isStreaming } = useInterview(sessionId)
+  const { messages, input, setInput, sendMessage, isStreaming,setMessages } = useInterview(sessionId)
+
+  const { data: history } = useQuery({
+    queryKey: ['sessionHistory', sessionId],
+    queryFn: async () => {
+      const response = await api.get(`/sessions/${sessionId}/conversations`)
+      return response.data
+    },
+    enabled: !!sessionId && !!token
+  })
 
   const { data: session, isLoading } = useQuery({
     queryKey: ['session', sessionId],
@@ -25,6 +34,15 @@ const Interview = () => {
     },
     enabled: !!sessionId && !!token
   })
+
+  useEffect(() => {
+    if (history && history.length > 0) {
+      setMessages(history.map((msg: any) => ({
+        role: msg.role,
+        content: msg.content
+      })))
+    }
+  }, [history])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
