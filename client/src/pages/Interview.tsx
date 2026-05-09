@@ -1,6 +1,6 @@
 // Interview.tsx
 import { Navigate, useParams } from 'react-router'
-import { use, useEffect, useRef } from 'react'
+import {  useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext'
 import { useInterview } from '../hooks/useInterview'

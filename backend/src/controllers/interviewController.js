@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import Session from '../models/Session.js'
 import Conversation from '../models/Conversation.js'
+import { createClaudeStream, logUsage } from '../services/aiService.js'
 
 export const respondToInterview = async (req, res) => {
   try {
@@ -32,7 +33,9 @@ export const respondToInterview = async (req, res) => {
     const conversationHistory = await Conversation.find({ sessionId })
       .sort({ createdAt: 1 })
 
-    const historyContent = conversationHistory.map(msg => ({
+    const historyContent = conversationHistory
+    .slice(-10)
+    .map(msg => ({
       role: msg.role,
       content: msg.content
     }))
@@ -60,12 +63,19 @@ Return ONLY valid JSON. No markdown, no code blocks, no backticks. Raw JSON only
     // stream response
     let fullResponse = ''
 
-    const stream = await client.messages.stream({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
-      system: systemPrompt,
-      messages: historyContent
-    })
+   
+    
+      const startTime = Date.now()
+
+      const stream = createClaudeStream({
+        params: {
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 1024,
+          system: systemPrompt,
+          messages: historyContent
+        }
+      })
+
 
     for await (const chunk of stream) {
       if (chunk.type === 'content_block_delta') {
@@ -74,6 +84,14 @@ Return ONLY valid JSON. No markdown, no code blocks, no backticks. Raw JSON only
         res.write(`data: ${JSON.stringify({ text })}\n\n`)
       }
     }
+
+    await logUsage({
+    stream,
+    userId: req.user._id,
+    sessionId,
+    startTime,
+    model: 'claude-haiku-4-5-20251001'
+  })
     const cleaned = fullResponse
   .replace(/```json/g, '')
   .replace(/```/g, '')

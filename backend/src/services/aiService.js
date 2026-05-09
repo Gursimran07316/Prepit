@@ -1,6 +1,41 @@
 // src/services/aiService.js
 import Anthropic from '@anthropic-ai/sdk'
 
+import UsageLog from '../models/UsageLog.js'
+
+
+
+// cost per million tokens for Haiku 4.5
+const INPUT_COST  = 1.00 / 1_000_000
+const OUTPUT_COST = 5.00 / 1_000_000
+
+export const createClaudeStream = ({ params }) => {
+  const client = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY
+})
+  return client.messages.stream(params)  
+}
+
+// aiService.js — separate function just for logging
+export const logUsage = async ({ stream, userId, sessionId, startTime, model }) => {
+  const finalMessage = await stream.finalMessage()
+  const { input_tokens, output_tokens } = finalMessage.usage
+  const latency = Date.now() - startTime
+  const cost = (input_tokens * INPUT_COST) + (output_tokens * OUTPUT_COST)
+
+  await UsageLog.create({
+    userId,
+    sessionId,
+    model,
+    inputTokens: input_tokens,
+    outputTokens: output_tokens,
+    cost,
+    latency
+  })
+
+  console.log(`input: ${input_tokens}, output: ${output_tokens}, cost: $${cost.toFixed(6)}, latency: ${latency}ms`)
+}
+
 
 
 
