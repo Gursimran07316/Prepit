@@ -5,7 +5,7 @@ import { parseJobPosting } from "../services/aiService.js";
 export const createSession = async (req, res) => {
     try {
         
-        const {jobPostingText} = req.body;
+        const { jobPostingText, difficulty } = req.body;
           if (!jobPostingText) {
         return res.status(400).json({ message: 'Job posting text is required' })
         }
@@ -19,6 +19,7 @@ export const createSession = async (req, res) => {
             companyName: result.companyName,
             requiredSkills: result.requiredSkills,
             preferredSkills: result.preferredSkills,
+            difficulty: difficulty,
             jobPostingText: jobPostingText,
         })
 

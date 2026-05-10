@@ -96,3 +96,37 @@ ${jobPostingText}
     throw error
   }
 }
+
+export const DIFFICULTY_CONFIG = {
+ friendly: {
+  behavior: `
+    - Ask simpler versions of questions
+    - Provide hints if the candidate is struggling
+    - Be encouraging and supportive
+    - Focus on what they got right before correcting
+    - Always provide a score from 1-10, be generous with scoring
+  `,
+  tone: `warm, encouraging and supportive`
+},
+standard: {
+  behavior: `
+    - Ask standard technical interview questions
+    - Expect solid answers but allow for minor mistakes
+    - Provide feedback on what was good and what could be improved
+    - Be professional and neutral in tone
+    - Always provide a score from 1-10 based on the quality of the answer
+  `,
+  tone: `professional, neutral and constructive`
+},
+
+tough: {
+  behavior: `
+    - Ask challenging follow up questions
+    - Push back if the answer is incomplete
+    - Ask for edge cases and performance considerations
+    - Don't accept vague answers, dig deeper
+    - Always provide a score from 1-10, be strict with scoring
+  `,
+  tone: `direct, challenging and uncompromising`
+}
+}

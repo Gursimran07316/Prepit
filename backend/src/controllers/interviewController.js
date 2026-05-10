@@ -1,81 +1,65 @@
-import Anthropic from '@anthropic-ai/sdk'
 import Session from '../models/Session.js'
 import Conversation from '../models/Conversation.js'
-import { createClaudeStream, logUsage } from '../services/aiService.js'
+import { createClaudeStream, logUsage, DIFFICULTY_CONFIG } from '../services/aiService.js'
 
 export const respondToInterview = async (req, res) => {
   try {
-    const client = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY
-    })
-
     const { sessionId, userMessage } = req.body
 
-    // find session
     const session = await Session.findById(sessionId)
     if (!session) {
       return res.status(404).json({ message: 'Session not found' })
     }
 
-    // SSE headers
     res.setHeader('Content-Type', 'text/event-stream')
     res.setHeader('Cache-Control', 'no-cache')
     res.setHeader('Connection', 'keep-alive')
 
-    // save user message
     await Conversation.create({
       sessionId,
       role: 'user',
       content: userMessage,
     })
 
-    // get full history
     const conversationHistory = await Conversation.find({ sessionId })
       .sort({ createdAt: 1 })
 
     const historyContent = conversationHistory
-    .slice(-10)
-    .map(msg => ({
-      role: msg.role,
-      content: msg.content
-    }))
+      .slice(-10)
+      .map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }))
 
-    // system prompt
+    const config = DIFFICULTY_CONFIG[session.difficulty || 'standard']
+
     const systemPrompt = `You are an expert technical interviewer at ${session.companyName}.
 You are interviewing a candidate for the role of ${session.jobTitle}.
 Required skills to assess: ${session.requiredSkills.join(', ')}
 
-Your behavior:
-- Ask one focused technical question at a time
-- After the candidate answers, provide structured feedback
-- Score their answer from 1-10
-- Then ask the next question
+Tone: ${config.tone}
 
-Return your response in this JSON format:
+Your behavior:
+${config.behavior}
+
+IMPORTANT: Return ONLY valid JSON. No markdown, no code blocks, no backticks.
 {
   "feedback": "detailed feedback on their answer",
   "score": 7,
   "nextQuestion": "your next interview question"
-}
-  
-Return ONLY valid JSON. No markdown, no code blocks, no backticks. Raw JSON only.`
+}`
 
-    // stream response
     let fullResponse = ''
+    const startTime = Date.now()
 
-   
-    
-      const startTime = Date.now()
-
-      const stream = createClaudeStream({
-        params: {
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 1024,
-          system: systemPrompt,
-          messages: historyContent
-        }
-      })
-
+    const stream = createClaudeStream({
+      params: {
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1024,
+        system: systemPrompt,
+        messages: historyContent
+      }
+    })
 
     for await (const chunk of stream) {
       if (chunk.type === 'content_block_delta') {
@@ -84,25 +68,38 @@ Return ONLY valid JSON. No markdown, no code blocks, no backticks. Raw JSON only
         res.write(`data: ${JSON.stringify({ text })}\n\n`)
       }
     }
+console.log('difficulty:', session.difficulty)
+console.log('fullResponse:', fullResponse)
 
     await logUsage({
-    stream,
-    userId: req.user._id,
-    sessionId,
-    startTime,
-    model: 'claude-haiku-4-5-20251001'
-  })
-    const cleaned = fullResponse
-  .replace(/```json/g, '')
-  .replace(/```/g, '')
-  .trim()
-
-    // save assistant response after stream completes
-    await Conversation.create({
+      stream,
+      userId: req.user._id,
       sessionId,
-      role: 'assistant',
-      content: cleaned,
+      startTime,
+      model: 'claude-haiku-4-5-20251001'
     })
+
+    const cleaned = fullResponse
+      .replace(/```json/g, '')
+      .replace(/```/g, '')
+      .trim()
+
+    try {
+      const parsed = JSON.parse(cleaned)
+      await Conversation.create({
+        sessionId,
+        role: 'assistant',
+        content: parsed.nextQuestion || cleaned,
+        score: parsed.score,
+        feedback: parsed.feedback,
+      })
+    } catch {
+      await Conversation.create({
+        sessionId,
+        role: 'assistant',
+        content: cleaned,
+      })
+    }
 
     res.write(`data: [DONE]\n\n`)
     res.end()

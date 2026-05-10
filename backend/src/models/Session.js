@@ -31,6 +31,11 @@ status: {
     type: [String],
       default: [],
   },
+  difficulty:{
+    type: String,
+    enum: ['friendly', 'standard', 'tough'],
+    default: 'standard',
+  }
 }, { timestamps: true   
 });
 

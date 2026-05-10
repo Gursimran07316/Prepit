@@ -15,7 +15,7 @@ const Interview = () => {
 
   if (!sessionId) return <Navigate to="/dashboard" replace />
 
-  const { messages, input, setInput, sendMessage, isStreaming,setMessages } = useInterview(sessionId)
+  const { messages, input, setInput, sendMessage, isStreaming} = useInterview(sessionId)
 
   const { data: history } = useQuery({
     queryKey: ['sessionHistory', sessionId],
@@ -35,14 +35,6 @@ const Interview = () => {
     enabled: !!sessionId && !!token
   })
 
-  useEffect(() => {
-    if (history && history.length > 0) {
-      setMessages(history.map((msg: any) => ({
-        role: msg.role,
-        content: msg.content
-      })))
-    }
-  }, [history])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -65,7 +57,8 @@ const Interview = () => {
 
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-1">
         {messages.map((msg, index) => (
-          <MessageBubble key={index} role={msg.role} content={msg.content} />
+          <MessageBubble key={index} role={msg.role} content={msg.content}     score={msg.score}        
+    feedback={msg.feedback}   />
         ))}
         {isStreaming && (
           <p className="text-gray-500 text-sm italic px-2 py-1">Claude is typing...</p>

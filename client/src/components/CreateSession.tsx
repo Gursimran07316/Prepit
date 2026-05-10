@@ -6,14 +6,18 @@ import api from '../api/axios'
 type CreateSessionProps = {
   onClose: () => void
 }
+
+
+
 const CreateSession = ({ onClose }: CreateSessionProps) => {
   const [jobDes, setJobDes] = useState('')
+  const [def, setDef] = useState('standard');
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
   const { mutate, isPending } = useMutation({
     mutationFn: (jobPostingText: string) =>
-      api.post('/sessions/create', { jobPostingText }),
+      api.post('/sessions/create', { jobPostingText,difficulty: def }),
     onSuccess: (response) => {
     onClose()
       navigate(`/session/${response.data.session._id}`)
@@ -23,7 +27,7 @@ const CreateSession = ({ onClose }: CreateSessionProps) => {
     }
   })
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!jobDes.trim()) return
     setError('')
@@ -51,6 +55,20 @@ const CreateSession = ({ onClose }: CreateSessionProps) => {
                        focus:outline-none focus:ring-2 focus:ring-blue-500
                        resize-none"
           />
+          <label className="block text-sm text-gray-400 mt-4 mb-1">
+            Select difficulty level
+          </label>
+          <select
+            value={def}
+            onChange={e => setDef(e.target.value)}
+            className="w-full bg-gray-800 border border-gray-700 text-white
+                       rounded-md px-4 py-2.5 text-sm focus:outline-none
+                       focus:ring-2 focus:ring-blue-500"
+          >
+            <option value={'friendly'}>Friendly</option>
+            <option value={'standard'}>Standard</option>
+            <option value={'tough'}>Tough</option>
+          </select>
         </div>
 
         {error && <p className="text-red-400 text-sm">{error}</p>}

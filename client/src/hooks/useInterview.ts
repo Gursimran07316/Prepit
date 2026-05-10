@@ -1,9 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext'
+import api from '../api/axios'
 
 type Message = {
   role: 'user' | 'assistant'
   content: string
+  score?: number | null
+  feedback?: string | null
 }
 
 export const useInterview = (sessionId: string) => {
@@ -12,10 +16,31 @@ export const useInterview = (sessionId: string) => {
   const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
 
+  // load conversation history on mount
+  const { data: history } = useQuery({
+    queryKey: ['conversations', sessionId],
+    queryFn: async () => {
+      const response = await api.get(`/sessions/${sessionId}/conversations`)
+      return response.data
+    },
+    enabled: !!sessionId && !!token
+  })
+
+  useEffect(() => {
+    if (history && history.length > 0) {
+      setMessages(history.map((msg: any) => ({
+        role: msg.role,
+        content: msg.content,
+        score: msg.score,
+        feedback: msg.feedback,
+      })))
+    }
+  }, [history])
+
   const sendMessage = async () => {
     if (!input.trim() || isStreaming) return
 
-    const currentMessage = input  // save before clearing
+    const currentMessage = input
 
     setMessages(prev => [...prev, { role: 'user', content: currentMessage }])
     setInput('')
@@ -50,7 +75,6 @@ export const useInterview = (sessionId: string) => {
 
           try {
             const { text } = JSON.parse(data)
-            
             setMessages(prev => {
               const updated = [...prev]
               updated[updated.length - 1] = {
@@ -65,6 +89,31 @@ export const useInterview = (sessionId: string) => {
         }
       }
 
+      // parse full response after stream completes
+      setMessages(prev => {
+        const updated = [...prev]
+        const lastContent = updated[updated.length - 1].content
+
+        const cleaned = lastContent
+          .replace(/```json/g, '')
+          .replace(/```/g, '')
+          .trim()
+
+        try {
+          const parsed = JSON.parse(cleaned)
+          updated[updated.length - 1] = {
+            role: 'assistant',
+            content: parsed.nextQuestion || cleaned,
+            score: parsed.score,
+            feedback: parsed.feedback,
+          }
+        } catch {
+          // keep raw content if parse fails
+        }
+
+        return updated
+      })
+
     } catch (error) {
       console.error('Stream error:', error)
     } finally {
@@ -72,5 +121,5 @@ export const useInterview = (sessionId: string) => {
     }
   }
 
-  return { messages, input, setInput, sendMessage, isStreaming,setMessages }
+  return { messages, input, setInput, sendMessage, isStreaming }
 }
