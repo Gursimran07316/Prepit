@@ -31,6 +31,8 @@ export const respondToInterview = async (req, res) => {
         content: msg.content
       }))
 
+    const questionsAsked=conversationHistory.filter(msg=>msg.role=='assistant').map(msg=>msg.content);
+
     const config = DIFFICULTY_CONFIG[session.difficulty || 'standard']
 
     const systemPrompt = `You are an expert technical interviewer at ${session.companyName}.
@@ -41,6 +43,11 @@ Tone: ${config.tone}
 
 Your behavior:
 ${config.behavior}
+
+${questionsAsked.length > 0
+  ? `Questions already asked — do NOT repeat any of these:\n${questionsAsked.map(q => `- ${q}`).join('\n')}`
+  : ''
+}
 
 IMPORTANT: Return ONLY valid JSON. No markdown, no code blocks, no backticks.
 {
