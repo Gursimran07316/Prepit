@@ -1,6 +1,7 @@
 import Session from '../models/Session.js'
 import Conversation from '../models/Conversation.js'
-import { createClaudeStream, logUsage, DIFFICULTY_CONFIG } from '../services/aiService.js'
+import { createClaudeStream, logUsage } from '../services/aiService.js'
+import { buildInterviewPrompt } from '../services/promptBuilder.js'
 
 export const respondToInterview = async (req, res) => {
   try {
@@ -33,28 +34,8 @@ export const respondToInterview = async (req, res) => {
 
     const questionsAsked=conversationHistory.filter(msg=>msg.role=='assistant').map(msg=>msg.content);
 
-    const config = DIFFICULTY_CONFIG[session.difficulty || 'standard']
 
-    const systemPrompt = `You are an expert technical interviewer at ${session.companyName}.
-You are interviewing a candidate for the role of ${session.jobTitle}.
-Required skills to assess: ${session.requiredSkills.join(', ')}
-
-Tone: ${config.tone}
-
-Your behavior:
-${config.behavior}
-
-${questionsAsked.length > 0
-  ? `Questions already asked — do NOT repeat any of these:\n${questionsAsked.map(q => `- ${q}`).join('\n')}`
-  : ''
-}
-
-IMPORTANT: Return ONLY valid JSON. No markdown, no code blocks, no backticks.
-{
-  "feedback": "detailed feedback on their answer",
-  "score": 7,
-  "nextQuestion": "your next interview question"
-}`
+    const systemPrompt = buildInterviewPrompt({ session, questionsAsked })
 
     let fullResponse = ''
     const startTime = Date.now()
