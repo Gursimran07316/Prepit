@@ -8,21 +8,22 @@ type CreateSessionProps = {
 }
 
 
-
 const CreateSession = ({ onClose }: CreateSessionProps) => {
+  const [resume, setResume] = useState<File | null>(null)
   const [jobDes, setJobDes] = useState('')
   const [def, setDef] = useState('standard');
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (jobPostingText: string) =>
-      api.post('/sessions/create', { jobPostingText,difficulty: def }),
+    mutationFn: (formData: FormData) =>
+      api.post('/sessions/create',  formData ),
     onSuccess: (response) => {
     onClose()
       navigate(`/session/${response.data.session._id}`)
     },
     onError: () => {
+     
       setError('Failed to create session. Please try again.')
     }
   })
@@ -31,7 +32,12 @@ const CreateSession = ({ onClose }: CreateSessionProps) => {
     e.preventDefault()
     if (!jobDes.trim()) return
     setError('')
-    mutate(jobDes)
+     const formData = new FormData()
+     formData.append('jobPostingText', jobDes)
+     formData.append('difficulty', def)
+    if (resume) formData.append('resume', resume)
+     
+    mutate(formData)
   }
 
   return (
@@ -69,6 +75,16 @@ const CreateSession = ({ onClose }: CreateSessionProps) => {
             <option value={'standard'}>Standard</option>
             <option value={'tough'}>Tough</option>
           </select>
+        </div>
+          <div>
+          <label className="block text-sm text-gray-400 mb-1">
+            Upload your resume (optional)
+          </label>
+          <input
+            type="file"
+            accept=".pdf"
+            onChange={e => setResume(e.target.files?.[0] || null)}
+          />
         </div>
 
         {error && <p className="text-red-400 text-sm">{error}</p>}

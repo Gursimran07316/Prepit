@@ -33,4 +33,9 @@ ${questionsAsked.length > 0
   ? `Already asked — do NOT repeat:\n${questionsAsked.map(q => `- ${q}`).join('\n')}`
   : ''
 }
+${session.resumeText
+  ? `Candidate resume:\n${session.resumeText}\n
+     Use this to ask personalized questions about their experience.`
+  : ''
+}
 `

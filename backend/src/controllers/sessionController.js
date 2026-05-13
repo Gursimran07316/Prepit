@@ -1,16 +1,35 @@
+import {PDFParse} from 'pdf-parse';
 import Conversation from "../models/Conversation.js";
 import Session from "../models/Session.js";
 import { parseJobPosting } from "../services/aiService.js";
 
 export const createSession = async (req, res) => {
     try {
+      
         
         const { jobPostingText, difficulty } = req.body;
           if (!jobPostingText) {
         return res.status(400).json({ message: 'Job posting text is required' })
         }
         const result = await parseJobPosting(jobPostingText);
-        console.log(result);
+        
+        
+    let resumeText = null
+   if (req.file) {
+  try {
+    
+    const parser = new PDFParse({data: req.file.buffer});
+    const data = await parser.getText();
+    const text = data.text.trim();
+  
+    resumeText = text
+    console.log('Resume parsed, length:', resumeText.length)
+  } catch (err) {
+    console.error('PDF parse error:', err.message)
+    resumeText = null
+  }
+}
+    
       
 
         const session= await Session.create({
@@ -21,6 +40,7 @@ export const createSession = async (req, res) => {
             preferredSkills: result.preferredSkills,
             difficulty: difficulty,
             jobPostingText: jobPostingText,
+            resumeText: resumeText
         })
 
         res.status(201).json({ message: 'Session created successfully' ,session})

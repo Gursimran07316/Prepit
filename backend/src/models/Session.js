@@ -35,6 +35,10 @@ status: {
     type: String,
     enum: ['friendly', 'standard', 'tough'],
     default: 'standard',
+  },
+  resumeText:{
+    type: String,
+    default: null,
   }
 }, { timestamps: true   
 });
