@@ -3,14 +3,29 @@ type MessageBubbleProps = {
   content: string ,
    score?: number | null
   feedback?: string | null
+  isStreaming?: boolean
 }
 
 
-const MessageBubble = ({ role, content, score, feedback }: MessageBubbleProps) => {
+const MessageBubble = ({ role, content, score, feedback, isStreaming }: MessageBubbleProps) => {
   const isUser = role === 'user'
 
 
   if (!isUser ) {
+    
+      if (isStreaming) {
+      return (
+        <div className="flex justify-start mb-4">
+          <div className="bg-slate-800 rounded-lg p-4 max-w-2xl">
+            <div className="flex gap-1 items-center">
+              <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+          </div>
+        </div>
+      )
+    }
   
     return (
       <div className="flex justify-start mb-4">

@@ -1,6 +1,5 @@
-// Interview.tsx
 import { Navigate, useParams } from 'react-router'
-import {  useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext'
 import { useInterview } from '../hooks/useInterview'
@@ -15,16 +14,7 @@ const Interview = () => {
 
   if (!sessionId) return <Navigate to="/dashboard" replace />
 
-  const { messages, input, setInput, sendMessage, isStreaming} = useInterview(sessionId)
-
-  const { data: history } = useQuery({
-    queryKey: ['sessionHistory', sessionId],
-    queryFn: async () => {
-      const response = await api.get(`/sessions/${sessionId}/conversations`)
-      return response.data
-    },
-    enabled: !!sessionId && !!token
-  })
+  const { messages, input, setInput, sendMessage, isStreaming } = useInterview(sessionId)
 
   const { data: session, isLoading } = useQuery({
     queryKey: ['session', sessionId],
@@ -34,7 +24,6 @@ const Interview = () => {
     },
     enabled: !!sessionId && !!token
   })
-
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -56,13 +45,21 @@ const Interview = () => {
       )}
 
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-1">
-        {messages.map((msg, index) => (
-          <MessageBubble key={index} role={msg.role} content={msg.content}     score={msg.score}        
-    feedback={msg.feedback}   />
-        ))}
-        {isStreaming && (
-          <p className="text-gray-500 text-sm italic px-2 py-1">Claude is typing...</p>
-        )}
+        {messages.map((msg, index) => {
+          const isLastMessage = index === messages.length - 1
+          const isCurrentlyStreaming = isStreaming && isLastMessage && msg.role === 'assistant'
+
+          return (
+            <MessageBubble
+              key={index}
+              role={msg.role}
+              content={msg.content}
+              score={msg.score}
+              feedback={msg.feedback}
+              isStreaming={isCurrentlyStreaming}
+            />
+          )
+        })}
         <div ref={bottomRef} />
       </div>
 
