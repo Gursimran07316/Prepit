@@ -13,11 +13,10 @@ type Message = {
 export const useInterview = (sessionId: string) => {
   const { token } = useAuth()
   const [messages, setMessages] = useState<Message[]>([])
-  const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
 
   // load conversation history on mount
-  const { data: history } = useQuery({
+  const { data: history ,isFetching} = useQuery({
     queryKey: ['conversations', sessionId],
     queryFn: async () => {
       const response = await api.get(`/sessions/${sessionId}/conversations`)
@@ -27,6 +26,13 @@ export const useInterview = (sessionId: string) => {
   })
 
   useEffect(() => {
+      
+    if (isFetching) return
+      if(history && history.length === 0 && !isStreaming) {
+      sendMessage('Start the interview')
+      return
+    }
+
     if (history && history.length > 0) {
       setMessages(history.map((msg: any) => ({
         role: msg.role,
@@ -34,16 +40,20 @@ export const useInterview = (sessionId: string) => {
         score: msg.score,
         feedback: msg.feedback,
       })))
+      
     }
-  }, [history])
+    
 
-  const sendMessage = async () => {
-    if (!input.trim() || isStreaming) return
+  }, [history,isFetching])
 
-    const currentMessage = input
+
+
+  const sendMessage = async (message: string) => {
+    if (!message.trim() || isStreaming) return
+
+    const currentMessage = message;
 
     setMessages(prev => [...prev, { role: 'user', content: currentMessage }])
-    setInput('')
     setIsStreaming(true)
     setMessages(prev => [...prev, { role: 'assistant', content: '' }])
 
@@ -121,5 +131,5 @@ export const useInterview = (sessionId: string) => {
     }
   }
 
-  return { messages, input, setInput, sendMessage, isStreaming }
+  return { messages,   sendMessage, isStreaming }
 }

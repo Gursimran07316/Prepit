@@ -22,6 +22,7 @@ Skills to assess: ${session.requiredSkills.join(', ')}
 Interviewer tone: ${config.tone}
 ${config.behavior}
 
+
 Scoring rubric:
 9-10: Exceptional, senior level, mentions edge cases
 7-8:  Good understanding, minor gaps

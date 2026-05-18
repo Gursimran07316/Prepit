@@ -56,8 +56,8 @@ export const respondToInterview = async (req, res) => {
         res.write(`data: ${JSON.stringify({ text })}\n\n`)
       }
     }
-console.log('difficulty:', session.difficulty)
-console.log('fullResponse:', fullResponse)
+// console.log('difficulty:', session.difficulty)
+// console.log('fullResponse:', fullResponse)
 
     await logUsage({
       stream,

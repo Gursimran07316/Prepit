@@ -1,29 +1,33 @@
+import { useState } from "react"
+
 // ChatInput.tsx
 type ChatInputProps = {
-  value: string
-  onChange: (value: string) => void
-  onSend: () => void
+  onSend: (message: string) => void
   isStreaming: boolean
 }
 
-const ChatInput = ({ value, onChange, onSend, isStreaming }: ChatInputProps) => {
+const ChatInput = ({   onSend, isStreaming }: ChatInputProps) => {
+  const [input, setInput] = useState('')
+ 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    onSend()
+    onSend(input)
+    setInput('')
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      onSend()
+      onSend(input)
+      setInput('')
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex items-end gap-3">
       <textarea
-        value={value}
-        onChange={e => onChange(e.target.value)}
+        value={input}
+        onChange={e => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Type your answer..."
         disabled={isStreaming}
@@ -32,7 +36,7 @@ const ChatInput = ({ value, onChange, onSend, isStreaming }: ChatInputProps) => 
       />
       <button
         type="submit"
-        disabled={isStreaming || !value.trim()}
+        disabled={isStreaming || !input.trim()}
         className="flex-none bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-xl px-5 py-3 text-sm transition-colors"
       >
         Send

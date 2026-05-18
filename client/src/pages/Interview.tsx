@@ -1,11 +1,12 @@
 import { Navigate, useParams } from 'react-router'
-import { useEffect, useRef } from 'react'
+import {  useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext'
 import { useInterview } from '../hooks/useInterview'
 import MessageBubble from '../components/MessageBubble'
 import ChatInput from '../components/ChatInput'
 import api from '../api/axios'
+
 
 const Interview = () => {
   const { sessionId } = useParams()
@@ -14,7 +15,7 @@ const Interview = () => {
 
   if (!sessionId) return <Navigate to="/dashboard" replace />
 
-  const { messages, input, setInput, sendMessage, isStreaming } = useInterview(sessionId)
+  const { messages, sendMessage, isStreaming } = useInterview(sessionId)
 
   const { data: session, isLoading } = useQuery({
     queryKey: ['session', sessionId],
@@ -28,6 +29,8 @@ const Interview = () => {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  
 
   if (isLoading) return (
     <div className="flex items-center justify-center flex-1">
@@ -65,8 +68,6 @@ const Interview = () => {
 
       <div className="flex-none border-t border-gray-800 bg-gray-900 px-4 py-4">
         <ChatInput
-          value={input}
-          onChange={setInput}
           onSend={sendMessage}
           isStreaming={isStreaming}
         />
