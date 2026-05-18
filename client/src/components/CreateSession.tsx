@@ -1,104 +1,143 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useMutation } from '@tanstack/react-query'
+import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import api from '../api/axios'
 
-type CreateSessionProps = {
-  onClose: () => void
-}
-
-
-const CreateSession = ({ onClose }: CreateSessionProps) => {
+const CreateSession = () => {
   const [resume, setResume] = useState<File | null>(null)
   const [jobDes, setJobDes] = useState('')
-  const [def, setDef] = useState('standard');
+  const [difficulty, setDifficulty] = useState('standard')
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
   const { mutate, isPending } = useMutation({
     mutationFn: (formData: FormData) =>
-      api.post('/sessions/create',  formData ),
+      api.post('/sessions/create', formData),
     onSuccess: (response) => {
-    onClose()
       navigate(`/session/${response.data.session._id}`)
     },
     onError: () => {
-     
       setError('Failed to create session. Please try again.')
     }
   })
+  const animationMap: Record<string, string> = {
+  friendly: 'https://lottie.host/08c517b2-3451-464d-86fa-b22cc629bef0/XzvS2FDEcm.lottie',
+  standard: 'https://lottie.host/34003d73-ec14-4e79-82d8-8ef37d197f36/WbKVHatcPA.lottie',
+  tough:    'https://lottie.host/39ddac98-4d8f-4f52-975e-fd3e85d897fe/zO16IhLUYA.lottie',
+}
 
-  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!jobDes.trim()) return
     setError('')
-     const formData = new FormData()
-     formData.append('jobPostingText', jobDes)
-     formData.append('difficulty', def)
+    const formData = new FormData()
+    formData.append('jobPostingText', jobDes)
+    formData.append('difficulty', difficulty)
     if (resume) formData.append('resume', resume)
-     
     mutate(formData)
   }
 
   return (
-    <div className="w-full max-w-sm bg-gray-900 border border-gray-800 rounded-xl p-8">
-      <h1 className="text-2xl font-bold text-white mb-6 text-center">
-        Create Session
-      </h1>
+    <div className="flex flex-col items-center justify-center
+                    min-h-full w-full px-6 py-8">
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm text-gray-400 mb-1">
-            Paste job description
-          </label>
-          <textarea
-            placeholder="Paste your job description here..."
-            value={jobDes}
-            onChange={e => setJobDes(e.target.value)}
-            rows={6}
-            className="w-full bg-gray-800 border border-gray-700 text-white
-                       placeholder-gray-500 rounded-md px-4 py-2.5 text-sm
-                       focus:outline-none focus:ring-2 focus:ring-blue-500
-                       resize-none"
-          />
-          <label className="block text-sm text-gray-400 mt-4 mb-1">
-            Select difficulty level
-          </label>
-          <select
-            value={def}
-            onChange={e => setDef(e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 text-white
-                       rounded-md px-4 py-2.5 text-sm focus:outline-none
-                       focus:ring-2 focus:ring-blue-500"
-          >
-            <option value={'friendly'}>Friendly</option>
-            <option value={'standard'}>Standard</option>
-            <option value={'tough'}>Tough</option>
-          </select>
+      <div className="w-full max-w-md">
+
+        {/* animation */}
+        <div className="flex justify-center mb-2">
+       <div className="w-50 h-50">
+            <DotLottieReact
+              key={difficulty}          
+              src={animationMap[difficulty]}
+              loop
+              autoplay
+            />
+</div>
         </div>
+
+        {/* heading */}
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-white mb-1">
+            New Interview Session
+          </h1>
+          <p className="text-gray-500 text-sm">
+            Paste a job posting and start practicing
+          </p>
+        </div>
+
+        {/* form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+
           <div>
-          <label className="block text-sm text-gray-400 mb-1">
-            Upload your resume (optional)
-          </label>
-          <input
-            type="file"
-            accept=".pdf"
-            onChange={e => setResume(e.target.files?.[0] || null)}
-          />
-        </div>
+            <label className="block text-sm text-gray-400 mb-1.5">
+              Job description
+            </label>
+            <textarea
+              placeholder="Paste the full job posting here..."
+              value={jobDes}
+              onChange={e => setJobDes(e.target.value)}
+              rows={6}
+              className="w-full bg-gray-800 border border-gray-700 text-white
+                         placeholder-gray-600 rounded-lg px-4 py-3 text-sm
+                         focus:outline-none focus:ring-2 focus:ring-blue-500
+                         resize-none"
+            />
+          </div>
 
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">
+              Difficulty
+            </label>
+            <div className="flex gap-2">
+              {(['friendly', 'standard', 'tough'] as const).map(level => (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => setDifficulty(level)}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium
+                              capitalize transition-colors ${
+                    difficulty === level
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-800 text-gray-400 hover:text-white border border-gray-700'
+                  }`}
+                >
+                  {level}
+                </button>
+              ))}
+            </div>
+          </div>
 
-        <button
-          type="submit"
-          disabled={isPending || !jobDes.trim()}
-          className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50
-                     disabled:cursor-not-allowed text-white font-semibold
-                     rounded-md px-4 py-2.5 text-sm transition-colors"
-        >
-          {isPending ? 'Creating session...' : 'Create Session'}
-        </button>
-      </form>
+          <div>
+            <label className="block text-sm text-gray-400 mb-1.5">
+              Resume <span className="text-gray-600">(optional)</span>
+            </label>
+            <input
+              type="file"
+              accept=".pdf"
+              onChange={e => setResume(e.target.files?.[0] || null)}
+              className="w-full text-sm text-gray-400
+                         file:mr-4 file:py-2 file:px-4 file:rounded-lg
+                         file:border-0 file:text-sm file:font-medium
+                         file:bg-gray-800 file:text-gray-300
+                         hover:file:bg-gray-700 cursor-pointer"
+            />
+          </div>
+
+          {error && <p className="text-red-400 text-sm">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={isPending || !jobDes.trim()}
+            className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50
+                       disabled:cursor-not-allowed text-white font-semibold
+                       rounded-lg px-4 py-3 text-sm transition-colors"
+          >
+            {isPending ? 'Analyzing...' : 'Start Interview →'}
+          </button>
+
+        </form>
+      </div>
     </div>
   )
 }

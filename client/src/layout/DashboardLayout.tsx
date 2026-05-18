@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Outlet, NavLink } from "react-router"
 import Logout from "../components/Logout"
+import SessionsList from "../components/SessionsList"
 
 const DashboardLayout = () => {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -42,7 +43,7 @@ const DashboardLayout = () => {
           </button>
         </div>
 
-        <nav className="flex-1 px-3 py-5 space-y-1">
+        <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
           <NavLink
             to="/dashboard"
             onClick={closeMenu}
@@ -56,6 +57,7 @@ const DashboardLayout = () => {
           >
             Dashboard
           </NavLink>
+          <SessionsList closeMenu={closeMenu} />
         </nav>
 
         <div className="px-3 py-4 border-t border-gray-800">

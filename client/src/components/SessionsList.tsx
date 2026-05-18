@@ -7,11 +7,13 @@ type SessionType = {
   _id: string
   companyName: string
   jobTitle: string
-  requiredSkills: string[]
-  preferredSkills: string[]
 }
 
-const SessionsList = () => {
+type Props = {
+  closeMenu: () => void
+}
+
+const SessionsList = ({ closeMenu }: Props) => {
   const { token } = useAuth()
 
   const { data: sessions = [], isLoading } = useQuery({
@@ -20,27 +22,31 @@ const SessionsList = () => {
       const response = await api.get('/sessions/get')
       return response.data
     },
-    enabled: !!token  // only fetch if token exists
+    enabled: !!token
   })
 
   if (isLoading) return (
-    <div className="flex items-center justify-center py-20">
-      <p className="text-gray-400 text-sm">Loading sessions...</p>
-    </div>
+    <p className="text-xs text-gray-600 px-4 py-2">Loading...</p>
+  )
+
+  if (sessions.length === 0) return (
+    <p className="text-xs text-gray-600 px-4 py-2">No sessions yet</p>
   )
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-white mb-6">Your Sessions</h2>
-      {sessions.length === 0 ? (
-        <p className="text-gray-500 text-sm">You have no sessions yet.</p>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sessions.map((session: SessionType) => (
-            <Sessions key={session._id} session={session} />
-          ))}
-        </div>
-      )}
+    <div className="mt-4">
+      <p className="text-xs text-gray-600 uppercase tracking-wider px-4 mb-2">
+        Recent
+      </p>
+      <div className="space-y-0.5">
+        {sessions.map((session: SessionType) => (
+          <Sessions
+            key={session._id}
+            session={session}
+            closeMenu={closeMenu}
+          />
+        ))}
+      </div>
     </div>
   )
 }

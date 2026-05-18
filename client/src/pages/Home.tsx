@@ -1,3 +1,4 @@
+import { DotLottieReact } from "@lottiefiles/dotlottie-react/webgpu"
 import { Link } from "react-router"
 
 const Home = () => {
@@ -7,6 +8,15 @@ const Home = () => {
         Ace your next<br />
         <span className="text-blue-500">technical interview</span>
       </h1>
+
+       <div className="w-64 h-64 md:w-80 md:h-80 mb-4">
+        <DotLottieReact
+          src="https://lottie.host/34003d73-ec14-4e79-82d8-8ef37d197f36/WbKVHatcPA.lottie"
+          loop
+          autoplay
+        />
+      </div>
+      
       <p className="text-gray-400 text-lg md:text-xl max-w-xl mb-10 leading-relaxed">
         PrepIt gives you AI-powered mock interviews tailored to real job postings.
         Practice, improve, and land the role.
