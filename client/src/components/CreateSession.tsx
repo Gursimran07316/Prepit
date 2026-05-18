@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import api from '../api/axios'
 
@@ -10,11 +10,13 @@ const CreateSession = () => {
   const [difficulty, setDifficulty] = useState('standard')
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const queryClient = useQueryClient() 
 
   const { mutate, isPending } = useMutation({
     mutationFn: (formData: FormData) =>
       api.post('/sessions/create', formData),
     onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] }) 
       navigate(`/session/${response.data.session._id}`)
     },
     onError: () => {
@@ -46,7 +48,7 @@ const CreateSession = () => {
 
         {/* animation */}
         <div className="flex justify-center mb-2">
-       <div className="w-50 h-50">
+       <div className="w-24 h-24 sm:w-40 sm:h-40">
             <DotLottieReact
               key={difficulty}          
               src={animationMap[difficulty]}

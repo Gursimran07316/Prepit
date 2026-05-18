@@ -11,6 +11,7 @@ import Home from './pages/Home'
 import DashboardLayout from './layout/DashboardLayout'
 import ProtectedRoute from './guards/ProtectedRoute'
 import Interview from './pages/Interview'
+import PublicRoute from './guards/PublicRoute';
 
 function App() {
 
@@ -18,10 +19,12 @@ function App() {
   return (
     <>
 <Routes>
-  <Route element={<MainLayout />}>
-    <Route path="/" element={<Home />} />
-    <Route path="/login" element={<Login />} />
-    <Route path="/register" element={<Register />} />
+  <Route element={<PublicRoute />}>
+    <Route element={<MainLayout />}>
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+    </Route>
   </Route>
 
   <Route element={<ProtectedRoute />}>

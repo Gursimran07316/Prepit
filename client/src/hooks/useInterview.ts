@@ -9,6 +9,7 @@ type Message = {
   score?: number | null
   feedback?: string | null
 }
+const url = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 export const useInterview = (sessionId: string) => {
   const { token } = useAuth()
@@ -58,7 +59,7 @@ export const useInterview = (sessionId: string) => {
     setMessages(prev => [...prev, { role: 'assistant', content: '' }])
 
     try {
-      const response = await fetch('http://localhost:5003/api/interview/respond', {
+      const response = await fetch(`${url}/interview/respond`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
